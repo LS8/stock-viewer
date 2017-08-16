@@ -2,6 +2,7 @@ const express = require('express');
 const app = express();
 
 const config = require('./config').config;
+const routes = require('./routes');
 
 // Add Middleware
 const cors = require('cors');
@@ -23,12 +24,8 @@ mongoose.connection.on('error', (err) => {
   console.log(`Database error: ${err} while trying to connect on ${config.mongoAddress}`);
 });
 
-// Add Routes
-// const user = require('./routes/user');
-// app.use('/api/user', user);
-
-// const bar = require('./routes/bar');
-// app.use('/api/bar', bar);
+// Use Routes
+app.use('/api', routes);
 
 // Set Static Folder
 // app.use(express.static(path.join(__dirname, 'public')));
