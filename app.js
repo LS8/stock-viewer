@@ -35,10 +35,6 @@ app.use('/api', routes);
 //   res.sendFile(path.join(__dirname, 'public/index.html'));
 // });
 
-app.get('/', (req, res) => {
-  res.send('lalal');
-});
-
 app.listen(config.port, () => {
   console.log(`Server running on port ${config.port}`);
 });
