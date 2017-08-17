@@ -1,0 +1,16 @@
+.footer {
+  position: absolute;
+  bottom: 0;
+  text-align: center;
+  margin: 0 auto;
+}
+.App, .navbar-default  {
+  color: white !important;
+  background: #182c39 !important;
+}
+.navbar-default {
+  border: 1px solid #182c39 !important;
+}
+a {
+  cursor: pointer;
+}
