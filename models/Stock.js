@@ -30,3 +30,7 @@ module.exports.createStock = function (name, symbol, callback) {
 module.exports.deleteStock = function (symbol, callback) {
   Stock.remove({symbol: symbol}, callback);
 };
+
+module.exports.findAll = function (callback) {
+  Stock.find({}, (callback));
+};
