@@ -26,3 +26,7 @@ module.exports.createStock = function (name, symbol, callback) {
   }); 
   stock.save(callback);
 };
+
+module.exports.deleteStock = function (symbol, callback) {
+  Stock.remove({symbol: symbol}, callback);
+};
