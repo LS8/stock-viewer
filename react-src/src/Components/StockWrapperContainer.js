@@ -4,15 +4,16 @@ import StockWrapper from './StockWrapper';
 
 const serverAddress = `http://localhost:8080/api`;
 
+var chart;
+
+const config = {
+  series: []
+};
+
 
 class StockWrapperContainer extends Component {
   constructor() {
     super();
-    this.state = {
-      config: {
-        series: []
-      }
-    };
 
     this.getActiveStocks = this.getActiveStocks.bind(this);
     this.getStockData = this.getStockData.bind(this);
@@ -46,16 +47,8 @@ class StockWrapperContainer extends Component {
       id: stockData.id
     };
 
-    this.setState(prevState => {
-      return {
-        config: {
-          series: [
-            ...prevState.config.series,
-            stockSeries
-          ]
-        }
-      };
-    });
+    config.series.push(stockSeries);
+    chart.addSeries(config.series[config.series.length-1]);
   }
 
   addStockToDB(stockData) {
@@ -87,7 +80,7 @@ class StockWrapperContainer extends Component {
 
   getStockData(stockSymbol, source) { // queries quandl for stock data by stock symbol 
     // check if stock(symbol) is already present in state and abort if so
-    if (keyAndPropPresent('name', stockSymbol, this.state.config.series)) {
+    if (keyAndPropPresent('name', stockSymbol, config.series)) {
       return;
     } else {
       axios.get(`${serverAddress}/quandl/${stockSymbol}`)
@@ -117,13 +110,19 @@ class StockWrapperContainer extends Component {
     }
   }
   
-  componentDidMount() {
+  componentWillMount() {
+    // chart = this.refs.chart.getChart();
     this.getActiveStocks();
+  }
+
+  getRef(ref) {
+    chart = ref;
+    console.log(chart);
   }
 
   
   render() {
-    return <StockWrapper addStock={this.getStockData} config={this.state.config} />;
+    return <StockWrapper getRef={this.getRef} refName="chart" addStock={this.getStockData} config={config} />;
   }
 }
 
