@@ -9,11 +9,13 @@ mongoose.Promise = global.Promise;
 const StockSchema = new Schema({
   name: {
     type: String,
-    required: true
+    required: true,
+    unique: true
   },
   symbol: {
     type: String,
-    required: true
+    required: true,
+    unique: true
   }
 });
 
