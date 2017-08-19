@@ -1,11 +1,11 @@
 import React from 'react';
-import StockWrapperContainer from './StockWrapperContainer';
+import ContentContainer from './ContentContainer';
 import Footer from './Footer';
 
 const Content = () => {
   return (
     <div className="content col-sm-12">
-      <StockWrapperContainer />
+      <ContentContainer />
       <Footer />
     </div>
   );

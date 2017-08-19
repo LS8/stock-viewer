@@ -1,12 +1,16 @@
 import React, {Component} from 'react';
 import axios from 'axios';
 import StockWrapper from './StockWrapper';
+import PanelWrapper from './PanelWrapper';
 
 const serverAddress = `http://localhost:8080/api`;
 
 var chart;
 
 const config = {
+  navigator: {
+    enabled: false
+  },
   series: []
 };
 
@@ -14,6 +18,10 @@ const config = {
 class StockWrapperContainer extends Component {
   constructor() {
     super();
+
+    this.state = {
+      stocks: []
+    };
 
     this.getActiveStocks = this.getActiveStocks.bind(this);
     this.getStockData = this.getStockData.bind(this);
@@ -49,6 +57,13 @@ class StockWrapperContainer extends Component {
 
     config.series.push(stockSeries);
     chart.addSeries(config.series[config.series.length-1]);
+    this.setState({
+      stocks: this.state.stocks.concat({
+        description: stockData.name,
+        name: stockData.dataset_code,
+        id: stockData.id
+      })
+    });
   }
 
   addStockToDB(stockData) {
@@ -117,12 +132,17 @@ class StockWrapperContainer extends Component {
 
   getRef(ref) {
     chart = ref;
-    console.log(chart);
+    // console.log(chart);
   }
 
   
   render() {
-    return <StockWrapper getRef={this.getRef} refName="chart" addStock={this.getStockData} config={config} />;
+    return (
+      <div>
+        <StockWrapper getRef={this.getRef} refName="chart" config={config} />;
+        <PanelWrapper stocks={this.state.stocks} addStock={this.getStockData} />
+      </div>
+    );
   }
 }
 
