@@ -3,24 +3,14 @@ const ReactHighstock = require('react-highcharts/ReactHighstock');
 
 class StockWrapper extends Component {
 
-  constructor(props) {
-    super(props);
-  }
-
   componentDidMount() {
+    // eslint-disable-next-line
     const chart = this.refs.chart.getChart();
     this.props.getRef(chart);
   }
 
   shouldComponentUpdate() {
-
     return false;
-
-  }
-
-  componentDidUpdate() {
-    // const chart = this.refs.chart.getChart();
-    // this.props.getRef(chart);
   }
 
   render() {
