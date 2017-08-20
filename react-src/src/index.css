@@ -28,6 +28,14 @@ body {
   display: none;
 }
 
+.footer-link {
+  color: #777;
+}
+
+.footer-link:hover {
+  color: #5e5e5e;
+  text-decoration: none;
+}
 
 @media (max-width: 280px) {
   .stock-panel .panel-body {
