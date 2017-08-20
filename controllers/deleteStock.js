@@ -1,7 +1,7 @@
 const Stock = require('../models/Stock');
 
 module.exports = (req, res) => {
-  const symbol = req.body.stockSymbol;
+  const symbol = req.query.stockSymbol;
 
   Stock.deleteStock(symbol, (err) => {
     if (err) {
