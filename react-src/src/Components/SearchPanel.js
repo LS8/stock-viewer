@@ -5,10 +5,12 @@ class SearchPanel extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      searchValue: ''
+      searchValue: '',
+      focus: false
     };
     this.handleChange = this.handleChange.bind(this);
     this.handleSubmit = this.handleSubmit.bind(this);
+    this.handleFocus = this.handleFocus.bind(this);
   }
 
   handleChange(event) {
@@ -20,11 +22,16 @@ class SearchPanel extends Component {
     this.setState({searchValue: ""});
     event.preventDefault();
   }
+
+  handleFocus() {
+    this.setState({ focus: !this.state.focus });
+  }
   
 
   render() {
     let {
       name,
+      notFound
     } = this.props;
     return (
       <div className="panel panel-default">
@@ -34,13 +41,15 @@ class SearchPanel extends Component {
         <div className="panel-body">
           <form onSubmit={this.handleSubmit}>
             <div className="input-group">
-              <input value={this.state.searchValue} onChange={this.handleChange} type="text" name="filterterm" className="form-control"/>
+              <input onFocus={this.handleFocus} onBlur={this.handleFocus} value={this.state.searchValue} onChange={this.handleChange} type="text" name="filterterm" className="form-control"/>
               <span className="input-group-btn">
                 <button type="submit" className="btn btn-info ">Add</button>
               </span>
             </div>
           </form>
-          <p id="notFound">Not found</p>
+          { notFound && !this.state.focus &&
+            <p id="notFound" className="text-danger">Please enter a valid stock symbol</p>
+          }
         </div>
       </div>
     );

@@ -24,7 +24,8 @@ class StockWrapperContainer extends Component {
     super();
 
     this.state = {
-      stocks: []
+      stocks: [],
+      notFound: false
     };
 
     this.addStock = this.addStock.bind(this);
@@ -113,7 +114,7 @@ class StockWrapperContainer extends Component {
           if (res.success && !stockNotFound) {
             this.addStock(res.data.dataset, source);
           } else if (stockNotFound) {
-            console.log(stockNotFound);
+            this.setState({ notFound: true });
           }
         })
         .catch((err) => {
@@ -145,7 +146,7 @@ class StockWrapperContainer extends Component {
     return (
       <div>
         <StockWrapper getRef={this.getRef} refName="chart" config={config} />
-        <PanelWrapper removeStock={this.removeStock} stocks={this.state.stocks} addStock={this.getStockData} />
+        <PanelWrapper notFound={this.state.notFound} removeStock={this.removeStock} stocks={this.state.stocks} addStock={this.getStockData} />
       </div>
     );
   }
