@@ -3,7 +3,7 @@ import StockPanel from './StockPanel';
 import SearchPanel from './SearchPanel';
 
 const PanelWrapper = (props) => {
-  const { stocks, addStock } = props;
+  const { removeStock, stocks, addStock } = props;
   return (
     <div className="panel-wrapper">
       <div className="col-sm-12 col-md-6 col-lg-4">
@@ -12,7 +12,7 @@ const PanelWrapper = (props) => {
       { stocks && stocks.map( (stock) => {
         return (
           <div key={stock.id} className="col-sm-12 col-md-6 col-lg-4">
-            <StockPanel description={stock.description} name={stock.name}/>
+            <StockPanel removeStock={removeStock} description={stock.description} name={stock.name}/>
           </div>
         );
       })}

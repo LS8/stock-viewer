@@ -9,7 +9,11 @@ var chart;
 
 const config = {
   navigator: {
-    enabled: false
+    enabled: false,
+  },
+  rangeSelector: {
+    selected: 2,
+    inputEnabled: false // deactive input range selector to get rid of random white dot on chrome
   },
   series: []
 };
@@ -28,6 +32,7 @@ class StockWrapperContainer extends Component {
     this.getStockData = this.getStockData.bind(this);
     this.checkQuandlResponse = this.checkQuandlResponse.bind(this);
     this.saveToDb = this.saveToDb.bind(this);
+    this.removeStock = this.removeStock.bind(this);
   }
 
   addStock(stockData, source) {
@@ -42,12 +47,13 @@ class StockWrapperContainer extends Component {
     if (source === "search") {
       this.saveToDb(stockData);
     }
+    // update state to include the new stock, triggering a re-render of the panels
+    this.setState({ stocks: this.state.stocks.concat({ description, name, id }) });
     // push stock representing object to the charts config series array
     config.series.push({ data, description, name, id });
     // add the last entry in the configs series array to the chart
     chart.addSeries(config.series[config.series.length-1]);
-    // update state to include the new stock, resulting in triggering a re-render of the panels
-    this.setState({ stocks: this.state.stocks.concat({ description, name, id }) });
+    chart.update({ navigator: { enabled: false } });
   }
 
   saveToDb(stockData) {
@@ -57,6 +63,24 @@ class StockWrapperContainer extends Component {
       .then(() => {
         // console.log(response);
         // this.addStock(stockData);
+      })
+      .catch(function (error) {
+        console.log(error);
+      });
+  }
+
+  removeStock(stockSymbol) {
+    const { index: indexToRemove } = searchForProp('name', stockSymbol, config.series);
+    config.series.splice(indexToRemove, 1);
+    if (!config.series.length) {
+      chart.update({ navigator: { enabled: true } });
+    }
+    chart.series[indexToRemove].remove();
+    const stocks = this.state.stocks;
+    stocks.splice(indexToRemove, 1);
+    this.setState({ stocks});
+    axios.delete(`${serverAddress}/`, {params: {stockSymbol}})
+      .then(() => {
       })
       .catch(function (error) {
         console.log(error);
@@ -120,8 +144,8 @@ class StockWrapperContainer extends Component {
   render() {
     return (
       <div>
-        <StockWrapper getRef={this.getRef} refName="chart" config={config} />;
-        <PanelWrapper stocks={this.state.stocks} addStock={this.getStockData} />
+        <StockWrapper getRef={this.getRef} refName="chart" config={config} />
+        <PanelWrapper removeStock={this.removeStock} stocks={this.state.stocks} addStock={this.getStockData} />
       </div>
     );
   }
@@ -134,7 +158,11 @@ function searchForProp (key, prop, array) {
   for (let i = 0; i < array.length; i++) {
     let object = array[i];
     if (object[key] === prop) {
-      found = prop;
+      found = {
+        prop,
+        key,
+        index: i
+      };
     }
   }
   return found;

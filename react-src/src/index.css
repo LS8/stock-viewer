@@ -10,6 +10,24 @@ body {
 .panel {
   height: 130px;
 }
+.panel-heading {
+  position: relative;
+}
+.close {
+  position: absolute;
+  right: 0;
+  margin-right: 15px;
+  /* float: right; */
+  /* display: inline; */
+}
+
+.highcharts-navigator {
+}
+
+#text {
+  display: none;
+}
+
 
 @media (max-width: 280px) {
   .stock-panel .panel-body {
