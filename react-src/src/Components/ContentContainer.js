@@ -122,6 +122,7 @@ class StockWrapperContainer extends Component {
           const stockNotFound = this.checkQuandlResponse(res);
           if (res.success && !stockNotFound) {
             this.addStock(res.data.dataset, source);
+            this.setState({ notFound: false });
           } else if (stockNotFound) {
             this.setState({ notFound: true });
           }
