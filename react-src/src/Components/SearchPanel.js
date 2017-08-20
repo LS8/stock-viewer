@@ -6,27 +6,26 @@ class SearchPanel extends Component {
     super(props);
     this.state = {
       searchValue: '',
-      focus: false
+      notTyping: true
     };
     this.handleChange = this.handleChange.bind(this);
     this.handleSubmit = this.handleSubmit.bind(this);
-    this.handleFocus = this.handleFocus.bind(this);
   }
 
   handleChange(event) {
-    this.setState({searchValue: event.target.value});
+    this.setState({searchValue: event.target.value, notTyping: false});
   }
 
   handleSubmit(event) {
+    if (!this.state.searchValue.trim()) {
+      this.setState({searchValue: "", notTyping: true });
+      event.preventDefault();
+      return;
+    } 
     this.props.addStock(this.state.searchValue, "search");
-    this.setState({searchValue: ""});
+    this.setState({searchValue: "", notTyping: true });
     event.preventDefault();
   }
-
-  handleFocus() {
-    this.setState({ focus: !this.state.focus });
-  }
-  
 
   render() {
     let {
@@ -41,13 +40,13 @@ class SearchPanel extends Component {
         <div className="panel-body">
           <form onSubmit={this.handleSubmit}>
             <div className="input-group">
-              <input onFocus={this.handleFocus} onBlur={this.handleFocus} value={this.state.searchValue} onChange={this.handleChange} type="text" name="filterterm" className="form-control"/>
+              <input value={this.state.searchValue} onChange={this.handleChange} type="text" name="filterterm" className="form-control"/>
               <span className="input-group-btn">
                 <button type="submit" className="btn btn-info ">Add</button>
               </span>
             </div>
           </form>
-          { notFound && !this.state.focus &&
+          { notFound && this.state.notTyping &&
             <p id="notFound" className="text-danger">Please enter a valid stock symbol</p>
           }
         </div>
