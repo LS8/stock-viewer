@@ -3,7 +3,7 @@ import axios from 'axios';
 import StockWrapper from './StockWrapper';
 import PanelWrapper from './PanelWrapper';
 
-const serverAddress = `http://localhost:8080/api`;
+const serverAddress = `/api`;
 
 var chart;
 
