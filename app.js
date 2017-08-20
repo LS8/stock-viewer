@@ -8,7 +8,7 @@ const routes = require('./routes');
 const cors = require('cors');
 const bodyparser = require('body-parser');
 const mongoose = require('mongoose');
-// const path = require('path');
+const path = require('path');
 
 app.use(bodyparser.json());
 app.use(cors());
@@ -28,7 +28,10 @@ mongoose.connection.on('error', (err) => {
 app.use('/api', routes);
 
 // Set Static Folder
-// app.use(express.static(path.join(__dirname, 'public')));
+app.use(express.static(path.join(__dirname, 'public')));
+app.get('/', function (req, res) {
+  res.sendFile(path.join(__dirname, 'public', 'index.html'));
+});
 
 // Index Route
 // app.get('*', (req, res) => {
