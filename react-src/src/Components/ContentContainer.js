@@ -23,56 +23,40 @@ class StockWrapperContainer extends Component {
       stocks: []
     };
 
+    this.addStock = this.addStock.bind(this);
     this.getActiveStocks = this.getActiveStocks.bind(this);
     this.getStockData = this.getStockData.bind(this);
-    this.addStockToState = this.addStockToState.bind(this);
     this.checkQuandlResponse = this.checkQuandlResponse.bind(this);
-    this.addStockToDB = this.addStockToDB.bind(this);
-    this.addStockToStateAndDB = this.addStockToStateAndDB.bind(this);
+    this.saveToDb = this.saveToDb.bind(this);
   }
 
-  addStockToStateAndDB(stockData) {
-    this.addStockToDB(stockData);
-    this.addStockToState(stockData);
-  }
-
-  addStockToState(stockData, source) {
-
-    if (source === "search") {
-      this.addStockToDB(stockData);
-    }
-
-    const unixTimeAndData = stockData.data.map( (pair) => {
-        let originalDate = pair[0];
-        pair[0] = new Date(originalDate).getTime();
+  addStock(stockData, source) {
+    const description = stockData.name;
+    const name        = stockData.dataset_code;
+    const id          = stockData.id;
+    const data        = stockData.data.map( (pair) => {
+        pair[0] = new Date(pair[0]).getTime();
         return pair;
       });
-
-    const stockSeries = {
-      data: unixTimeAndData,
-      description: stockData.name,
-      name: stockData.dataset_code,
-      id: stockData.id
-    };
-
-    config.series.push(stockSeries);
+    // stock is new and was not already in the db so it has to be saved to the db
+    if (source === "search") {
+      this.saveToDb(stockData);
+    }
+    // push stock representing object to the charts config series array
+    config.series.push({ data, description, name, id });
+    // add the last entry in the configs series array to the chart
     chart.addSeries(config.series[config.series.length-1]);
-    this.setState({
-      stocks: this.state.stocks.concat({
-        description: stockData.name,
-        name: stockData.dataset_code,
-        id: stockData.id
-      })
-    });
+    // update state to include the new stock, resulting in triggering a re-render of the panels
+    this.setState({ stocks: this.state.stocks.concat({ description, name, id }) });
   }
 
-  addStockToDB(stockData) {
+  saveToDb(stockData) {
     const stockName = stockData.name;
     const stockSymbol = stockData.dataset_code;
     axios.post(`${serverAddress}/`, {stockName, stockSymbol})
       .then(() => {
         // console.log(response);
-        // this.addStockToState(stockData);
+        // this.addStock(stockData);
       })
       .catch(function (error) {
         console.log(error);
@@ -103,7 +87,7 @@ class StockWrapperContainer extends Component {
           const res = response.data;
           const stockNotFound = this.checkQuandlResponse(res);
           if (res.success && !stockNotFound) {
-            this.addStockToState(res.data.dataset, source);
+            this.addStock(res.data.dataset, source);
           } else if (stockNotFound) {
             console.log(stockNotFound);
           }
@@ -126,15 +110,12 @@ class StockWrapperContainer extends Component {
   }
   
   componentWillMount() {
-    // chart = this.refs.chart.getChart();
     this.getActiveStocks();
   }
 
   getRef(ref) {
     chart = ref;
-    // console.log(chart);
   }
-
   
   render() {
     return (
