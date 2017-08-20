@@ -3,7 +3,7 @@ import axios from 'axios';
 import StockWrapper from './StockWrapper';
 import PanelWrapper from './PanelWrapper';
 
-const serverAddress = `/api`;
+const serverAddress = `http://localhost:8080/api`;
 
 var chart;
 
@@ -15,7 +15,9 @@ const config = {
     selected: 2,
     inputEnabled: false // deactive input range selector to get rid of random white dot on chrome
   },
-  series: []
+  series: [{
+    data: []
+  }]
 };
 
 
@@ -50,8 +52,15 @@ class StockWrapperContainer extends Component {
     }
     // update state to include the new stock, triggering a re-render of the panels
     this.setState({ stocks: this.state.stocks.concat({ description, name, id }) });
-    // push stock representing object to the charts config series array
-    config.series.push({ data, description, name, id });
+
+    if (!config.series[0] || !config.series[0].data.length) {
+      config.series[0] = { data, description, name, id };
+      if (chart.series[0]) chart.series[0].remove();
+    } else{
+      // push stock representing object to the charts config series array
+      config.series.push({ data, description, name, id });
+    }
+
     // add the last entry in the configs series array to the chart
     chart.addSeries(config.series[config.series.length-1]);
     chart.update({ navigator: { enabled: false } });
