@@ -2,10 +2,11 @@ import React, {Component} from 'react';
 import axios from 'axios';
 import StockWrapper from './StockWrapper';
 import PanelWrapper from './PanelWrapper';
+import io from 'socket.io-client';
 
 const serverAddress = `http://localhost:8080/api`;
 
-var chart;
+var chart, socket;
 
 const config = {
   navigator: {
@@ -27,7 +28,8 @@ class StockWrapperContainer extends Component {
 
     this.state = {
       stocks: [],
-      notFound: false
+      notFound: false,
+      socket: null
     };
 
     this.addStock = this.addStock.bind(this);
@@ -36,6 +38,7 @@ class StockWrapperContainer extends Component {
     this.checkQuandlResponse = this.checkQuandlResponse.bind(this);
     this.saveToDb = this.saveToDb.bind(this);
     this.removeStock = this.removeStock.bind(this);
+    this.emitRemove = this.emitRemove.bind(this);
   }
 
   addStock(stockData, source) {
@@ -50,20 +53,23 @@ class StockWrapperContainer extends Component {
     if (source === "search") {
       this.saveToDb(stockData);
     }
-    // update state to include the new stock, triggering a re-render of the panels
-    this.setState({ stocks: this.state.stocks.concat({ description, name, id }) });
 
-    if (!config.series[0] || !config.series[0].data.length) {
-      config.series[0] = { data, description, name, id };
-      if (chart.series[0]) chart.series[0].remove();
-    } else{
-      // push stock representing object to the charts config series array
-      config.series.push({ data, description, name, id });
+    if (!keyAndPropPresent('id', id, this.state.stocks)) {
+      // update state to include the new stock, triggering a re-render of the panels
+      this.setState({ stocks: this.state.stocks.concat({ description, name, id }) });
+
+      if (!config.series[0] || !config.series[0].data.length) {
+        config.series[0] = { data, description, name, id };
+        if (chart.series[0]) chart.series[0].remove();
+      } else{
+        // push stock representing object to the charts config series array
+        config.series.push({ data, description, name, id });
+      }
+
+      // add the last entry in the configs series array to the chart
+      chart.addSeries(config.series[config.series.length-1]);
+      chart.update({ navigator: { enabled: false } });
     }
-
-    // add the last entry in the configs series array to the chart
-    chart.addSeries(config.series[config.series.length-1]);
-    chart.update({ navigator: { enabled: false } });
   }
 
   saveToDb(stockData) {
@@ -79,7 +85,15 @@ class StockWrapperContainer extends Component {
       });
   }
 
+  emitRemove(stockSymbol) {
+    socket.emit('removeStockRequest', stockSymbol);
+  }
+
   removeStock(stockSymbol) {
+    // socket.emit('removeStockRequest', stockSymbol);
+    // if (!keyAndPropPresent('name', stockSymbol, this.state.stocks)) {
+    //   return;
+    // }
     const { index: indexToRemove } = searchForProp('name', stockSymbol, config.series);
     config.series.splice(indexToRemove, 1);
     if (!config.series.length) {
@@ -121,6 +135,7 @@ class StockWrapperContainer extends Component {
           const res = response.data;
           const stockNotFound = this.checkQuandlResponse(res);
           if (res.success && !stockNotFound) {
+            socket.emit('addStockRequest', {stock: res.data.dataset });
             this.addStock(res.data.dataset, source);
             this.setState({ notFound: false });
           } else if (stockNotFound) {
@@ -148,6 +163,16 @@ class StockWrapperContainer extends Component {
     this.getActiveStocks();
   }
 
+  componentDidMount() {
+    socket = io.connect('http://localhost:8080/');
+    socket.on('stockAdded', (data) => this.addStock(data.stock, "db"));
+    socket.on('stockRemoved', (symbol) => this.removeStock(symbol));
+    // socket.on('news', function (data) {
+    //   console.log(data);
+    //   socket.emit('my other event', { my: 'from component!' });
+    // });
+  }
+
   getRef(ref) {
     chart = ref;
   }
@@ -156,7 +181,7 @@ class StockWrapperContainer extends Component {
     return (
       <div>
         <StockWrapper getRef={this.getRef} refName="chart" config={config} />
-        <PanelWrapper notFound={this.state.notFound} removeStock={this.removeStock} stocks={this.state.stocks} addStock={this.getStockData} />
+        <PanelWrapper emit={this.emitRemove} notFound={this.state.notFound} removeStock={this.removeStock} stocks={this.state.stocks} addStock={this.getStockData} />
       </div>
     );
   }

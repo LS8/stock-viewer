@@ -1,5 +1,7 @@
 const express = require('express');
 const app = express();
+var server = require('http').Server(app);
+var io = require('socket.io')(server);
 
 const config = require('./config').config;
 const routes = require('./routes');
@@ -38,6 +40,16 @@ app.get('/', function (req, res) {
 //   res.sendFile(path.join(__dirname, 'public/index.html'));
 // });
 
-app.listen(config.port, () => {
+server.listen(config.port, () => {
   console.log(`Server running on port ${config.port}`);
+});
+
+io.on('connection', function (socket) {
+  socket.on('addStockRequest', (stock) => {
+    // console.log(stock);
+    socket.broadcast.emit('stockAdded', stock);
+  });
+  socket.on('removeStockRequest', (symbol) => {
+    socket.broadcast.emit('stockRemoved', symbol);
+  });
 });
