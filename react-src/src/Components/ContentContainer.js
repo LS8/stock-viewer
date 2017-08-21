@@ -4,7 +4,7 @@ import StockWrapper from './StockWrapper';
 import PanelWrapper from './PanelWrapper';
 import io from 'socket.io-client';
 
-const serverAddress = `http://localhost:8080/api`;
+const serverAddress = `/api`;
 
 var chart, socket;
 
@@ -164,7 +164,7 @@ class StockWrapperContainer extends Component {
   }
 
   componentDidMount() {
-    socket = io.connect('http://localhost:8080/');
+    socket = io.connect('/');
     socket.on('stockAdded', (data) => this.addStock(data.stock, "db"));
     socket.on('stockRemoved', (symbol) => this.removeStock(symbol));
     // socket.on('news', function (data) {
