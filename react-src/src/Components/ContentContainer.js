@@ -38,6 +38,7 @@ class StockWrapperContainer extends Component {
     this.checkQuandlResponse = this.checkQuandlResponse.bind(this);
     this.saveToDb = this.saveToDb.bind(this);
     this.removeStock = this.removeStock.bind(this);
+    this.emitRemove = this.emitRemove.bind(this);
   }
 
   addStock(stockData, source) {
@@ -84,7 +85,15 @@ class StockWrapperContainer extends Component {
       });
   }
 
+  emitRemove(stockSymbol) {
+    socket.emit('removeStockRequest', stockSymbol);
+  }
+
   removeStock(stockSymbol) {
+    // socket.emit('removeStockRequest', stockSymbol);
+    // if (!keyAndPropPresent('name', stockSymbol, this.state.stocks)) {
+    //   return;
+    // }
     const { index: indexToRemove } = searchForProp('name', stockSymbol, config.series);
     config.series.splice(indexToRemove, 1);
     if (!config.series.length) {
@@ -157,6 +166,7 @@ class StockWrapperContainer extends Component {
   componentDidMount() {
     socket = io.connect('http://localhost:8080/');
     socket.on('stockAdded', (data) => this.addStock(data.stock, "db"));
+    socket.on('stockRemoved', (symbol) => this.removeStock(symbol));
     // socket.on('news', function (data) {
     //   console.log(data);
     //   socket.emit('my other event', { my: 'from component!' });
@@ -171,7 +181,7 @@ class StockWrapperContainer extends Component {
     return (
       <div>
         <StockWrapper getRef={this.getRef} refName="chart" config={config} />
-        <PanelWrapper notFound={this.state.notFound} removeStock={this.removeStock} stocks={this.state.stocks} addStock={this.getStockData} />
+        <PanelWrapper emit={this.emitRemove} notFound={this.state.notFound} removeStock={this.removeStock} stocks={this.state.stocks} addStock={this.getStockData} />
       </div>
     );
   }

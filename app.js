@@ -49,4 +49,7 @@ io.on('connection', function (socket) {
     // console.log(stock);
     socket.broadcast.emit('stockAdded', stock);
   });
+  socket.on('removeStockRequest', (symbol) => {
+    socket.broadcast.emit('stockRemoved', symbol);
+  });
 });
