@@ -2,6 +2,7 @@ import React, {Component} from 'react';
 import axios from 'axios';
 import StockWrapper from './StockWrapper';
 import PanelWrapper from './PanelWrapper';
+import io from 'socket.io-client';
 
 const serverAddress = `http://localhost:8080/api`;
 
@@ -146,6 +147,15 @@ class StockWrapperContainer extends Component {
   
   componentWillMount() {
     this.getActiveStocks();
+  }
+
+  componentDidMount() {
+    const socket = io.connect('http://localhost:8080/');
+    socket.on('count', (i) => console.log(i));
+    socket.on('news', function (data) {
+      console.log(data);
+      socket.emit('my other event', { my: 'from component!' });
+    });
   }
 
   getRef(ref) {
