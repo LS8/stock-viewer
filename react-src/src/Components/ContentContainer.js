@@ -6,7 +6,7 @@ import io from 'socket.io-client';
 
 const serverAddress = `http://localhost:8080/api`;
 
-var chart;
+var chart, socket;
 
 const config = {
   navigator: {
@@ -28,7 +28,8 @@ class StockWrapperContainer extends Component {
 
     this.state = {
       stocks: [],
-      notFound: false
+      notFound: false,
+      socket: null
     };
 
     this.addStock = this.addStock.bind(this);
@@ -51,20 +52,23 @@ class StockWrapperContainer extends Component {
     if (source === "search") {
       this.saveToDb(stockData);
     }
-    // update state to include the new stock, triggering a re-render of the panels
-    this.setState({ stocks: this.state.stocks.concat({ description, name, id }) });
 
-    if (!config.series[0] || !config.series[0].data.length) {
-      config.series[0] = { data, description, name, id };
-      if (chart.series[0]) chart.series[0].remove();
-    } else{
-      // push stock representing object to the charts config series array
-      config.series.push({ data, description, name, id });
+    if (!keyAndPropPresent('id', id, this.state.stocks)) {
+      // update state to include the new stock, triggering a re-render of the panels
+      this.setState({ stocks: this.state.stocks.concat({ description, name, id }) });
+
+      if (!config.series[0] || !config.series[0].data.length) {
+        config.series[0] = { data, description, name, id };
+        if (chart.series[0]) chart.series[0].remove();
+      } else{
+        // push stock representing object to the charts config series array
+        config.series.push({ data, description, name, id });
+      }
+
+      // add the last entry in the configs series array to the chart
+      chart.addSeries(config.series[config.series.length-1]);
+      chart.update({ navigator: { enabled: false } });
     }
-
-    // add the last entry in the configs series array to the chart
-    chart.addSeries(config.series[config.series.length-1]);
-    chart.update({ navigator: { enabled: false } });
   }
 
   saveToDb(stockData) {
@@ -122,6 +126,7 @@ class StockWrapperContainer extends Component {
           const res = response.data;
           const stockNotFound = this.checkQuandlResponse(res);
           if (res.success && !stockNotFound) {
+            socket.emit('addStockRequest', {stock: res.data.dataset });
             this.addStock(res.data.dataset, source);
             this.setState({ notFound: false });
           } else if (stockNotFound) {
@@ -150,12 +155,12 @@ class StockWrapperContainer extends Component {
   }
 
   componentDidMount() {
-    const socket = io.connect('http://localhost:8080/');
-    socket.on('count', (i) => console.log(i));
-    socket.on('news', function (data) {
-      console.log(data);
-      socket.emit('my other event', { my: 'from component!' });
-    });
+    socket = io.connect('http://localhost:8080/');
+    socket.on('stockAdded', (data) => this.addStock(data.stock, "db"));
+    // socket.on('news', function (data) {
+    //   console.log(data);
+    //   socket.emit('my other event', { my: 'from component!' });
+    // });
   }
 
   getRef(ref) {
