@@ -6,17 +6,14 @@ module.exports = (req, res) => {
   const symbol = req.params.symbol;
 
   let now = new Date();
-  let year = now.getFullYear();
+  // let year = now.getFullYear();
+  let year = 2018;
   let month = now.getMonth() + 1;
   let date = now.getDate();
 
-  const url = `https://www.quandl.com/api/v3/datasets/WIKI/${symbol}.json`;
-  const apiKeyParam = `?api_key=${apiKey}`;
-  const dateParams = `&start_date=${year - 1}-${month}-${date}&end_date=${year}-${month}-${date}`;
-  const sortParam = `&order=asc`;
-  const limitParams = `&column_index=4`;
-
-  const completeUrl = `${url}${apiKeyParam}${dateParams}${sortParam}${limitParams}`;
+  const url = `https://www.alphavantage.co/query?function=TIME_SERIES_DAILY&symbol=${symbol}&outputsize=full`
+  const apiKeyParam = `&apikey=${apiKey}`;
+  const completeUrl = `${url}${apiKeyParam}`;
 
   let headers = {
     'Content-Type': 'application/json',

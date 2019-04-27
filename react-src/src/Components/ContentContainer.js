@@ -5,6 +5,7 @@ import PanelWrapper from './PanelWrapper';
 import io from 'socket.io-client';
 
 const serverAddress = `/api`;
+// const serverAddress = `http://localhost:8080/api`;
 
 var chart, socket;
 
@@ -35,20 +36,33 @@ class StockWrapperContainer extends Component {
     this.addStock = this.addStock.bind(this);
     this.getActiveStocks = this.getActiveStocks.bind(this);
     this.getStockData = this.getStockData.bind(this);
-    this.checkQuandlResponse = this.checkQuandlResponse.bind(this);
+    this.checkApiResponse = this.checkApiResponse.bind(this);
     this.saveToDb = this.saveToDb.bind(this);
     this.removeStock = this.removeStock.bind(this);
     this.emitRemove = this.emitRemove.bind(this);
   }
 
   addStock(stockData, source) {
-    const description = stockData.name;
-    const name        = stockData.dataset_code;
-    const id          = stockData.id;
-    const data        = stockData.data.map( (pair) => {
-        pair[0] = new Date(pair[0]).getTime();
-        return pair;
-      });
+    const description = stockData["Meta Data"]["2. Symbol"]
+    const name        = stockData["Meta Data"]["2. Symbol"]
+    const id          = stockData["Meta Data"]["2. Symbol"]
+    let data = [];
+    for (const [key, value] of Object.entries(stockData["Time Series (Daily)"])) {
+      let date = new Date(key);
+      date = date.getFullYear() + "-" + (date.getMonth() + 1) + "-" + date.getDate()
+      date = new Date(date).getTime();
+      let val = Number(value["1. open"]);
+      data.push([date, val]);
+      // data.push({new Date (key).getTime(): Number(value["1. open"])});
+    }
+    data = data.reverse();
+    console.log(data);
+    // const data        = Object.values(stockData["Time Series (Daily)"]).map( (pair) => {
+    //   console.log("le pair")
+    //   console.log(pair)
+    //     pair[0] = new Date(pair[0]).getTime();
+    //     return pair;
+    //   });
     // stock is new and was not already in the db so it has to be saved to the db
     if (source === "search") {
       this.saveToDb(stockData);
@@ -112,6 +126,8 @@ class StockWrapperContainer extends Component {
   }
 
   getActiveStocks() {
+    console.log("we here")
+    console.log(serverAddress)
     axios.get(`${serverAddress}/`)
       .then((response) => {
         let activeStocks = response.data.stocks;
@@ -130,13 +146,13 @@ class StockWrapperContainer extends Component {
     if (keyAndPropPresent('name', stockSymbol, config.series)) {
       return;
     } else {
-      axios.get(`${serverAddress}/quandl/${stockSymbol}`)
+      axios.get(`${serverAddress}/stock/${stockSymbol}`)
         .then((response) => {
           const res = response.data;
-          const stockNotFound = this.checkQuandlResponse(res);
+          const stockNotFound = this.checkApiResponse(res);
           if (res.success && !stockNotFound) {
             socket.emit('addStockRequest', {stock: res.data.dataset });
-            this.addStock(res.data.dataset, source);
+            this.addStock(res.data, source);
             this.setState({ notFound: false });
           } else if (stockNotFound) {
             this.setState({ notFound: true });
@@ -148,11 +164,9 @@ class StockWrapperContainer extends Component {
     }
   }
 
-  checkQuandlResponse(response) {
-    if (!response.success) {
-      const msg = (response.data.quandl_error.code === 'QECx02')
-                  ? "Please enter a valid Stock Symbol"
-                  : "Sorry, no success while searching for this stock";
+  checkApiResponse(response) {
+    if (Object.keys(response.data).includes('Error Message')) {
+      const msg = "Please enter a valid Stock Symbol";
       return msg;
     } else {
       return false;

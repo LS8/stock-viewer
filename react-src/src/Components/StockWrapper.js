@@ -6,6 +6,8 @@ class StockWrapper extends Component {
   componentDidMount() {
     // eslint-disable-next-line
     const chart = this.refs.chart.getChart();
+    console.log("mount")
+    console.log(this.props)
     this.props.getRef(chart);
   }
 

@@ -6,11 +6,11 @@ const findStock = require('./controllers/findStock');
 const createStock = require('./controllers/createStock');
 const deleteStock = require('./controllers/deleteStock');
 
-const fetchFromQuandl = require('./controllers/quandlStock');
+const fetchStock = require('./controllers/fetchStock');
 
 Router.get('/', findStock);
 Router.post('/', createStock);
 Router.delete('/', deleteStock);
-Router.get('/quandl/:symbol', fetchFromQuandl);
+Router.get('/stock/:symbol', fetchStock);
 
 module.exports = Router;
