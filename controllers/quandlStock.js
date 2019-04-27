@@ -6,9 +6,9 @@ module.exports = (req, res) => {
   const symbol = req.params.symbol;
 
   let now = new Date();
-  let year = now.getFullYear();
-  let month = now.getMonth() + 1;
-  let date = now.getDate();
+  let year = "2018";
+  let month = "03";
+  let date = "27";
 
   const url = `https://www.quandl.com/api/v3/datasets/WIKI/${symbol}.json`;
   const apiKeyParam = `?api_key=${apiKey}`;
